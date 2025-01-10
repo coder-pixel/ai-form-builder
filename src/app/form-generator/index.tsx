@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,22 +12,49 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
+import { generateForm } from "@/actions/generateForm";
+import { useFormState, useFormStatus } from "react-dom";
+
 type Props = {};
 
+export const SubmitButton = () => {
+  const { pending } = useFormStatus();
+  return <Button>{pending ? "Generating" : "Generate"}</Button>;
+};
+
+const initialState: {
+  message: string;
+  data: any;
+} = {
+  message: "",
+  data: {},
+};
+
 const FormGenerator = (props: Props) => {
+  const [state, formAction] = useFormState(generateForm, initialState);
   const [open, setOpen] = useState(false);
 
   const _onFormCreate = () => {
     setOpen(true);
   };
 
+  useEffect(() => {
+    if (state.message === "success") {
+      setOpen(false); // close dialog
+    }
+    console.log(state.content);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger onClick={_onFormCreate}>Create Form</DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Create New Form</DialogTitle>
-          <form>
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <Button onClick={_onFormCreate}>Create Form</Button>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create New Form</DialogTitle>
+          </DialogHeader>
+          <form action={formAction}>
             <div className="grid gap-4 py-4">
               <Textarea
                 id="description"
@@ -36,14 +63,14 @@ const FormGenerator = (props: Props) => {
                 placeholder="Share what your form is about, who is it for, and what nformation you would like to collect. And AI will do the magic!"
               ></Textarea>
             </div>
+            <DialogFooter>
+              <SubmitButton />
+              <Button variant="link">Create Manually</Button>
+            </DialogFooter>
           </form>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="link">Create Manually</Button>
-          {/* <Button>Submit</Button> */}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
