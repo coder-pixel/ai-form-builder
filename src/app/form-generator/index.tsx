@@ -1,19 +1,21 @@
 "use client";
+// client component
+// way to use next-auth in client-component -> use useSession hook
+
 import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 import { generateForm } from "@/actions/generateForm";
 import { useFormState, useFormStatus } from "react-dom";
+import { signIn, useSession } from "next-auth/react";
 
 type Props = {};
 
@@ -31,10 +33,16 @@ const initialState: {
 };
 
 const FormGenerator = (props: Props) => {
+  const session = useSession();
+
   const [state, formAction] = useFormState(generateForm, initialState);
   const [open, setOpen] = useState(false);
 
   const _onFormCreate = () => {
+    if (!session?.data?.user) {
+      signIn();
+      return;
+    }
     setOpen(true);
   };
 
